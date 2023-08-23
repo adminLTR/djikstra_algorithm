@@ -23,7 +23,7 @@ for i in nodes:
 init = input("Initial: ").upper()[0]
 nodes[init].appendTag((0, None))
 cola = [init]
-
+final = input("Final: ").upper()[0]
 def setTrack(check):
     if len(cola) <= 0:
         return
@@ -43,7 +43,7 @@ def setTrack(check):
     for child in nodes[check].getChildren():
         setTrack(child)
 
-final = input("Final: ").upper()[0]
+
 setTrack(init)
 root.posPenNode(nodes[final].getPos())
 root.printTrack(final, nodes)
