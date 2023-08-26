@@ -57,19 +57,23 @@ class Node:
         return  " -> " + self.__id
 
 class Matrix:
-    def __init__(self, n):
-        self.__m = []
+    def default(n):
+        m = []
         for i in range(n):
             x = []
             for j in range(n):
                 x.append(rd.randint(0, 50))
-            self.__m.append(x)
+            m.append(x)
+        return m
     
-    def manually(self):
-        for i in range(len(self.__m)):
-            for j in range(len(self.__m)):
-                self.__m[i][j] = int(input(f"Inserta numero [{i}][{j}]: "))
-        
+    def manually(n):
+        m = []
+        for i in range(n):
+            aux = []
+            for j in range(n):
+                aux.append(int(input(f"Inserta numero [{i}][{j}]: ")))
+            m.append(aux)
+        return m
 
 class Screen(tk.Tk):
     WIDTH = 500
@@ -96,16 +100,16 @@ class Screen(tk.Tk):
         self.__cv.create_oval(x - radius, y - radius, x + radius, y + radius, fill=node.color, outline=node.color)
         self.__cv.create_text(x, y, text=node.getID(), fill='black', font=('Helvetica', 10, 'bold'))
     
-    def drawArist(self, nodes:dict[str:Node]) -> None:
+    def drawArist(self, nodes:list[Node]) -> None:
         self.__pen.color("white")
         self.__tr.tracer(0,0)
         for i in nodes:
-            for j in nodes[i].getChildren():                
+            for j in i.getChildren():                
                 self.__pen.penup()
-                x, y = nodes[i].getPos()
+                x, y = i.getPos()
                 self.__pen.goto(x,-1*y)
                 self.__pen.pendown()
-                x, y = nodes[j].getPos()
+                x, y = nodes[int(j)].getPos()
                 self.__pen.goto(x, -1*y)
     
     def printTrack(self, id:(str | None), nodes:dict):
@@ -127,9 +131,24 @@ class Screen(tk.Tk):
         self.__tr.tracer(0)
         self.__pen.penup()
         self.__pen.goto(x,-1*y)
+    
+    def draw_polygon(self, sides):
+        center_x = self.__cv.winfo_reqwidth() / 2
+        center_y = self.__cv.winfo_reqheight() / 2
+        radius = 120 
 
+        angle_increment = 360 / sides
+        self.__cors = []
 
-root = Screen()
+        for i in range(sides):
+            angle = math.radians(i * angle_increment)
+            x = center_x + radius * math.cos(angle)
+            y = center_y - radius * math.sin(angle)  
+            self.__cors.append((x - self.WIDTH//2, y - self.HEIGHT//2))
+    
+    def getCor(self, i):
+        return self.__cors[i]
+
 
 n = int(input("Inserta N: "))
 opc = -1
@@ -137,12 +156,19 @@ while opc<0 or opc>2:
     print("1. Llenar manualmente")
     print("2. Llenar aleatoriamente")
     print("0. Salir")
-
+    opc = int(input("Inserta opcion: "))
 if opc!=0:
-    matriz = Matrix(n)
-    if opc==2:
-        matriz.manually()
-    
+    root = Screen()
+    root.draw_polygon(n)
+    matriz = Matrix.default(n)
+    grafo = []
+    if opc==1:
+        matriz = Matrix.manually(n) 
+    for i in range(n):
+        grafo.append(Node(str(i), root.getCor(i), tuple([x for x in range(n) if x!=i]), 'red'))
+    root.drawArist(grafo)
+    for i in grafo:
+        root.drawNode(i)
     while True:
         try:
             root.update()
